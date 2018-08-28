@@ -1,13 +1,16 @@
 package ch.bomberman.game.entity.play;
 
+import ch.bomberman.game.util.AssetCollection;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.IntArray;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static ch.bomberman.game.util.CoordinateSystemHelper.getNormalizedMousePosition;
 
 
 public class Player {
@@ -19,18 +22,20 @@ public class Player {
     private final static int RIGHT = Input.Keys.D;
     private final static List<Integer> MOVEMENT_KEYS = Arrays.asList(UP, LEFT, DOWN, RIGHT);
 
-    private List<Integer> pressedMovementKeys = new ArrayList<>();
-    private Vector2 position;
+    private Rectangle playerBox;
     private Texture texture;
+    private IntArray pressedMovementKeys;
 
+    private float waitTimeTemp = 0;
 
     public Player() {
-        position = new Vector2(0,0);
-        texture = new Texture(Gdx.files.internal("badlogic.jpg"));
+        texture = new Texture(AssetCollection.PLAYER);
+        playerBox = new Rectangle(0, 0, texture.getWidth(), texture.getHeight());
+        pressedMovementKeys = new IntArray(MOVEMENT_KEYS.size());
     }
 
-    public Vector2 getPosition() {
-        return position;
+    public Rectangle getPlayerBox() {
+        return playerBox;
     }
 
     public Texture getTexture() {
@@ -40,6 +45,13 @@ public class Player {
     public void update(float dt) {
         move(dt);
         //TODO more update components
+        waitTimeTemp += dt;
+        if(waitTimeTemp > 1f) {
+            Gdx.app.log("BOUNDING BOX TEST, CONTAINED: ", String.valueOf(getPlayerBox().contains(
+                    getNormalizedMousePosition().x,
+                    getNormalizedMousePosition().y)));
+            waitTimeTemp = 0;
+        }
     }
 
     /**
@@ -59,20 +71,20 @@ public class Player {
         //remove all input-keys not currently being pressed & are in the list
         MOVEMENT_KEYS.stream()
                 .filter(k -> !Gdx.input.isKeyPressed(k) && pressedMovementKeys.contains(k))
-                .forEach(k -> pressedMovementKeys.remove(k));
+                .forEach(k -> pressedMovementKeys.removeValue(k));
 
         //the element with the highest index in the array is the latest keypress => use this input-key for movement
-        int curMovementKey = pressedMovementKeys.isEmpty() ? Input.Keys.ANY_KEY : pressedMovementKeys.get(pressedMovementKeys.size() - 1);
+        int curMovementKey = pressedMovementKeys.size == 0 ? Input.Keys.ANY_KEY : pressedMovementKeys.get(pressedMovementKeys.size - 1);
 
         //select direction
         if (curMovementKey == LEFT) {
-            position.x -= deltaDistance;
+            playerBox.x -= deltaDistance;
         } else if (curMovementKey == RIGHT) {
-            position.x += deltaDistance;
+            playerBox.x += deltaDistance;
         } else if (curMovementKey == UP) {
-            position.y += deltaDistance;
+            playerBox.y += deltaDistance;
         } else if (curMovementKey == DOWN) {
-            position.y -= deltaDistance;
+            playerBox.y -= deltaDistance;
         }
     }
 

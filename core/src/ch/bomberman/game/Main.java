@@ -2,13 +2,15 @@ package ch.bomberman.game;
 
 import ch.bomberman.game.activity.ActivityManager;
 import ch.bomberman.game.activity.MenuActivity;
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-//TODO make architecture activity based
+//TODO read extended tutorial, use Game + Screens?
 //TODO add map, check how resizing affects map, pixel measuring?
+//TODO make bombs poolable objects
 //TODO add camera, decide on a viewport
 //TODO add debug
 //TODO add sounds
@@ -26,6 +28,9 @@ public class Main extends ApplicationAdapter {
 	
 	@Override
 	public void create() {
+		//TODO fix loglevel
+		Gdx.app.setLogLevel(Application.LOG_INFO);
+
 		batch = new SpriteBatch();
 		//start with menu
 		activityManager = new ActivityManager();
@@ -57,6 +62,8 @@ public class Main extends ApplicationAdapter {
 			activityManager.getCurrentActivity().draw(batch);
 			batch.end();
 			waitTime = 0;
+			//TODO remove me
+			Gdx.app.debug("HEAP", String.valueOf(Gdx.app.getJavaHeap()));
 		}
 	}
 

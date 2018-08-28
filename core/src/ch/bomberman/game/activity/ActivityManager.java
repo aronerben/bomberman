@@ -10,7 +10,9 @@ public class ActivityManager {
 
     public void setCurrentActivity(Activity currentActivity) {
         //dispose when swapping activities (prevent memory leaks)
-        this.currentActivity.dispose();
+        if(this.currentActivity != null) {
+            this.currentActivity.dispose();
+        }
         this.currentActivity = currentActivity;
     }
 }

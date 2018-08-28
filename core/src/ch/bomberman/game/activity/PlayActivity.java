@@ -2,13 +2,11 @@ package ch.bomberman.game.activity;
 
 import ch.bomberman.game.entity.play.Player;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.badlogic.gdx.utils.Array;
 
 public class PlayActivity extends Activity {
 
-    private List<Player> mans = new ArrayList<>();
+    private Array<Player> mans = new Array<>();
 
     public PlayActivity(ActivityManager activityManager) {
         super(activityManager);
@@ -23,7 +21,7 @@ public class PlayActivity extends Activity {
 
     @Override
     public void draw(SpriteBatch batch) {
-        batch.draw(mans.get(0).getTexture(), (int) mans.get(0).getPosition().x, (int) mans.get(0).getPosition().y);
+        mans.forEach(player -> batch.draw(player.getTexture(), (int) player.getPlayerBox().x, (int) player.getPlayerBox().y));
     }
 
     @Override
