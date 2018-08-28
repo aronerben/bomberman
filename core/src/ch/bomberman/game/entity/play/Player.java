@@ -1,4 +1,4 @@
-package ch.bomberman.game.entity;
+package ch.bomberman.game.entity.play;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+
 public class Player {
 
     private final static float SPEED = 100;
@@ -16,11 +17,12 @@ public class Player {
     private final static int LEFT = Input.Keys.A;
     private final static int DOWN = Input.Keys.S;
     private final static int RIGHT = Input.Keys.D;
+    private final static List<Integer> MOVEMENT_KEYS = Arrays.asList(UP, LEFT, DOWN, RIGHT);
 
+    private List<Integer> pressedMovementKeys = new ArrayList<>();
     private Vector2 position;
     private Texture texture;
-    private List<Integer> pressedMovementKeys = new ArrayList<>();
-    private List<Integer> movementKeys = Arrays.asList(UP, LEFT, DOWN, RIGHT);
+
 
     public Player() {
         position = new Vector2(0,0);
@@ -50,12 +52,12 @@ public class Player {
         double deltaDistance = dt * SPEED;
 
         //add all input-keys currently being pressed & aren't already in the list
-        movementKeys.stream()
+        MOVEMENT_KEYS.stream()
                 .filter(k -> Gdx.input.isKeyPressed(k) && !pressedMovementKeys.contains(k))
                 .forEach(k -> pressedMovementKeys.add(k));
 
         //remove all input-keys not currently being pressed & are in the list
-        movementKeys.stream()
+        MOVEMENT_KEYS.stream()
                 .filter(k -> !Gdx.input.isKeyPressed(k) && pressedMovementKeys.contains(k))
                 .forEach(k -> pressedMovementKeys.remove(k));
 

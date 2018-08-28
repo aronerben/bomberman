@@ -1,14 +1,13 @@
 package ch.bomberman.game;
 
-import ch.bomberman.game.entity.Player;
+import ch.bomberman.game.activity.ActivityManager;
+import ch.bomberman.game.activity.MenuActivity;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-import java.util.ArrayList;
-import java.util.List;
-//TODO make architecture stack based
+//TODO make architecture activity based
 //TODO add map, check how resizing affects map, pixel measuring?
 //TODO add camera, decide on a viewport
 //TODO add debug
@@ -21,17 +20,16 @@ public class Main extends ApplicationAdapter {
 
 	private static final int FRAMERATE = 999;
 
-
+	private ActivityManager activityManager;
 	private SpriteBatch batch;
-	private List<Player> mans = new ArrayList<>();
 	private float waitTime;
 	
 	@Override
 	public void create() {
 		batch = new SpriteBatch();
-		//TODO dynamic player add
-		mans.add(new Player());
-
+		//start with menu
+		activityManager = new ActivityManager();
+		activityManager.setCurrentActivity(new MenuActivity(activityManager));
 		//initial color clear
 		Gdx.gl.glClearColor( 1, 0, 0, 1 );
 	}
@@ -39,7 +37,6 @@ public class Main extends ApplicationAdapter {
 	@Override
 	public void render() {
 		float dt = Gdx.graphics.getDeltaTime();
-
 		logicalRender(dt);
 		physicalRender(dt);
 	}
@@ -47,7 +44,7 @@ public class Main extends ApplicationAdapter {
 	//logical rendering, not dependent on given framerate, dependent on provided tick-rate by libgdx
 	private void logicalRender(float dt) {
 		//TODO check if tickrate is always 144
-		updateEntities(dt);
+		activityManager.getCurrentActivity().update(dt);
 	}
 
 	//physical rendering, draw calls dependent on given framerate
@@ -57,16 +54,10 @@ public class Main extends ApplicationAdapter {
 			//clear the screen
 			Gdx.gl.glClear( GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT );
 			batch.begin();
-			batch.draw(mans.get(0).getTexture(), (int) mans.get(0).getPosition().x, (int) mans.get(0).getPosition().y);
+			activityManager.getCurrentActivity().draw(batch);
 			batch.end();
-
 			waitTime = 0;
 		}
-	}
-
-	private void updateEntities(float dt) {
-		mans.forEach(player -> player.update(dt));
-		//TODO more entities
 	}
 
 	@Override
@@ -78,7 +69,6 @@ public class Main extends ApplicationAdapter {
 	@Override
 	public void dispose() {
 		batch.dispose();
-		mans.forEach(Player::dispose);
-		//TODO more entities
+		activityManager.getCurrentActivity().dispose();
 	}
 }
