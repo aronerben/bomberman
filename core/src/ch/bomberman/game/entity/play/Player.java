@@ -10,8 +10,6 @@ import com.badlogic.gdx.utils.IntArray;
 import java.util.Arrays;
 import java.util.List;
 
-import static ch.bomberman.game.util.CoordinateSystemHelper.getNormalizedMousePosition;
-
 
 public class Player {
 
@@ -45,12 +43,18 @@ public class Player {
     public void update(float dt) {
         move(dt);
         //TODO more update components
+
+        //TODO remove debugging
         waitTimeTemp += dt;
-        if(waitTimeTemp > 1f) {
-            Gdx.app.log("BOUNDING BOX TEST, CONTAINED: ", String.valueOf(getPlayerBox().contains(
-                    getNormalizedMousePosition().x,
-                    getNormalizedMousePosition().y)));
-            waitTimeTemp = 0;
+        if(waitTimeTemp > 0.1f) {
+            System.out.println(
+                                    "x: " + getPlayerBox().x +
+                                    " y: " + getPlayerBox().y +
+                                    " width: " + getPlayerBox().getWidth() +
+                                    " height: " + getPlayerBox().getHeight() +
+                                            " aspect ratio: " + getPlayerBox().getAspectRatio()
+
+            );
         }
     }
 

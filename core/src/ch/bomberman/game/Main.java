@@ -6,7 +6,10 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 //TODO read extended tutorial, use Game + Screens?
 //TODO add map, check how resizing affects map, pixel measuring?
@@ -25,11 +28,20 @@ public class Main extends ApplicationAdapter {
 	private ActivityManager activityManager;
 	private SpriteBatch batch;
 	private float waitTime;
+
+	//TODO refactor these?
+	private OrthographicCamera cam;
+	private Viewport viewport;
 	
 	@Override
 	public void create() {
 		//TODO fix loglevel
 		Gdx.app.setLogLevel(Application.LOG_INFO);
+
+		cam = new OrthographicCamera();
+		//TODO decide wether fill, fit or screen
+		viewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), cam);
+		viewport.apply(true);
 
 		batch = new SpriteBatch();
 		//start with menu
@@ -42,6 +54,8 @@ public class Main extends ApplicationAdapter {
 	@Override
 	public void render() {
 		float dt = Gdx.graphics.getDeltaTime();
+		cam.update();
+		batch.setProjectionMatrix(cam.combined);
 		logicalRender(dt);
 		physicalRender(dt);
 	}
@@ -69,8 +83,7 @@ public class Main extends ApplicationAdapter {
 
 	@Override
 	public void resize(int width, int height) {
-		System.out.println(width);
-		System.out.println(height);
+		viewport.update(width, height, true);
 	}
 
 	@Override
