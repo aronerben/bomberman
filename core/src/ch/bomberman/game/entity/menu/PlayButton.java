@@ -6,18 +6,21 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 
-import static ch.bomberman.game.util.CoordinateSystemHelper.getNormalizedMousePosition;
-
 
 public class PlayButton {
 
     private static final int START = Input.Keys.ENTER;
+
+    public final static float BUTTON_WIDTH = 25;
+    public final static float BUTTON_HEIGHT = 25;
 
     private Sprite sprite;
 
     public PlayButton() {
         //TODO position properly (careful with camera and viewport)
         sprite = new Sprite(new Texture(AssetCollection.PLAY_BUTTON));
+        sprite.setSize(BUTTON_WIDTH, BUTTON_HEIGHT);
+        sprite.setOriginCenter();
     }
 
     public Sprite getSprite() {
@@ -25,11 +28,7 @@ public class PlayButton {
     }
 
     public boolean pressed() {
-        //TODO maybe use an input processor later and add this as a listener to the input processor
-        //TODO not twice same method call pls
-        return Gdx.input.isKeyJustPressed(START) ||
-                (Gdx.input.isTouched()
-                        && sprite.getBoundingRectangle().contains(getNormalizedMousePosition().x, getNormalizedMousePosition().y));
+        return Gdx.input.isKeyJustPressed(START);
     }
 
     public void dispose() {

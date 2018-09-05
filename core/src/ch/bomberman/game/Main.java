@@ -20,8 +20,13 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 public class Main extends ApplicationAdapter {
 
 	public static final String NAME = "Bomberman";
-	public static final int WIDTH = 800;
-	public static final int HEIGHT = 600;
+
+	/**
+	 * For easier handling, the game uses virtual units and not pixels.
+	 * For example, a player has height 3. Once can think of this unit as meters
+	 */
+	public static final float VIRTUAL_WIDTH = 100;
+	public static final float VIRTUAL_HEIGHT = 100;
 
 	private static final int FRAMERATE = 999;
 
@@ -36,11 +41,11 @@ public class Main extends ApplicationAdapter {
 	@Override
 	public void create() {
 		//TODO fix loglevel
-		Gdx.app.setLogLevel(Application.LOG_INFO);
+		Gdx.app.setLogLevel(Application.LOG_DEBUG);
 
 		cam = new OrthographicCamera();
 		//TODO decide wether fill, fit or screen
-		viewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), cam);
+		viewport = new FitViewport(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, cam);
 		viewport.apply(true);
 
 		batch = new SpriteBatch();
@@ -53,6 +58,7 @@ public class Main extends ApplicationAdapter {
 
 	@Override
 	public void render() {
+		//IMPORTANT: dont use streams in this call hierarchy, it causes memory leaks
 		float dt = Gdx.graphics.getDeltaTime();
 		cam.update();
 		batch.setProjectionMatrix(cam.combined);
@@ -76,8 +82,6 @@ public class Main extends ApplicationAdapter {
 			activityManager.getCurrentActivity().draw(batch);
 			batch.end();
 			waitTime = 0;
-			//TODO remove me
-			Gdx.app.debug("HEAP", String.valueOf(Gdx.app.getJavaHeap()));
 		}
 	}
 
