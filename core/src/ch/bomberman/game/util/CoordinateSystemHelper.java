@@ -19,9 +19,14 @@ public class CoordinateSystemHelper {
         return new Vector2(Main.VIRTUAL_WIDTH / 2 - width / 2, Main.VIRTUAL_HEIGHT / 2 - height / 2);
     }
 
-    public static Vector2 normalizeTileIndexToVirtualUnits(float j, float i) {
+    public static Vector2 tileIndexToVirtualUnits(float j, float i) {
         Vector2 offset = CoordinateSystemHelper.getCenterCoord(MAP_TILES * TILE_SIZE, MAP_TILES * TILE_SIZE);
         return new Vector2(j * TILE_SIZE + offset.x, i * TILE_SIZE + offset.y);
+    }
+
+    public static Vector2 virtualUnitsToTileIndex(float x, float y) {
+        Vector2 offset = CoordinateSystemHelper.getCenterCoord(MAP_TILES * TILE_SIZE, MAP_TILES * TILE_SIZE);
+        return new Vector2((int) ((x - offset.x) / TILE_SIZE), (int) ((y - offset.y) / TILE_SIZE));
     }
 
 }

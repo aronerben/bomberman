@@ -37,7 +37,7 @@ public class Player {
     public Player(Vector2 startingPosition) {
         texture = new Texture(AssetCollection.PLAYER);
         pressedMovementKeys = new IntArray(MOVEMENT_KEYS.size());
-        Vector2 normalizedPos = CoordinateSystemHelper.normalizeTileIndexToVirtualUnits(startingPosition.x, startingPosition.y);
+        Vector2 normalizedPos = CoordinateSystemHelper.tileIndexToVirtualUnits(startingPosition.x, startingPosition.y);
         //TODO center player on tile?
         playerBox = new Rectangle(normalizedPos.x, normalizedPos.y, PLAYER_WIDTH, PLAYER_HEIGHT);
     }
@@ -103,6 +103,7 @@ public class Player {
         } else if (curMovementKey == DOWN) {
             playerBox.y -= deltaDistance;
         }
+        System.out.println("Player tile: " + CoordinateSystemHelper.virtualUnitsToTileIndex(playerBox.x, playerBox.y));
     }
 
     public void dispose() {

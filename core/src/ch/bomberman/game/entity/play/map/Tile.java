@@ -20,7 +20,7 @@ public abstract class Tile {
     }
 
     private Rectangle createNormalizedTileBox() {
-        Vector2 normalizedPos = CoordinateSystemHelper.normalizeTileIndexToVirtualUnits(tileIndex.x, tileIndex.y);
+        Vector2 normalizedPos = CoordinateSystemHelper.tileIndexToVirtualUnits(tileIndex.x, tileIndex.y);
         return new Rectangle(normalizedPos.x, normalizedPos.y, TILE_SIZE, TILE_SIZE);
     }
 
