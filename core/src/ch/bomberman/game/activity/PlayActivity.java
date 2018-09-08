@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
 
 import static ch.bomberman.game.entity.play.map.Map.MAP_TILES;
+import static ch.bomberman.game.entity.play.map.Tile.TILE_SIZE;
 
 public class PlayActivity extends Activity {
 
@@ -22,9 +23,8 @@ public class PlayActivity extends Activity {
 
         //TODO dynamic player add
         for(int i = 0; i < PLAYERS; i++) {
-            mans.add(new Player(Map.STARTING_POSITIONS[i]));
+            mans.add(new Player(map, i));
         }
-
     }
 
     @Override
@@ -43,7 +43,7 @@ public class PlayActivity extends Activity {
         for(int i = 0; i < MAP_TILES; i++) {
             for(int j = 0; j < MAP_TILES; j++) {
                 Tile curTile = tiles[i][j];
-                batch.draw(curTile.getTexture(), curTile.getTileBox().x, curTile.getTileBox().y, Tile.TILE_SIZE, Tile.TILE_SIZE);
+                batch.draw(curTile.getTexture(), curTile.getTileBox().x, curTile.getTileBox().y, TILE_SIZE, TILE_SIZE);
             }
         }
     }

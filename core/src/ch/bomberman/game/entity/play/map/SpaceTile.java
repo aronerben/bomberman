@@ -9,4 +9,9 @@ class SpaceTile extends Tile {
     SpaceTile(Vector2 tileIndex) {
         super(new Texture(AssetCollection.SPACE_TILE), tileIndex);
     }
+
+    @Override
+    public boolean isTraversable() {
+        return true;
+    }
 }

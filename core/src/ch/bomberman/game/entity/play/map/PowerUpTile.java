@@ -9,4 +9,9 @@ class PowerUpTile extends Tile {
     PowerUpTile(Vector2 tileIndex) {
         super(new Texture(AssetCollection.POWER_UP_TILE), tileIndex);
     }
+
+    @Override
+    public boolean isTraversable() {
+        return true;
+    }
 }

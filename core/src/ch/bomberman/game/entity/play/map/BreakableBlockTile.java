@@ -9,4 +9,9 @@ class BreakableBlockTile extends Tile{
     BreakableBlockTile(Vector2 tileIndex) {
         super(new Texture(AssetCollection.BREAKABLE_BLOCK_TILE), tileIndex);
     }
+
+    @Override
+    public boolean isTraversable() {
+        return false;
+    }
 }

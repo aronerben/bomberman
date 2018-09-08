@@ -7,7 +7,7 @@ import com.badlogic.gdx.math.Vector2;
 
 public abstract class Tile {
     //TODO width and height separate?
-    public static final int TILE_SIZE = 6;
+    public static final float TILE_SIZE = 6;
 
     private Texture texture;
     private Vector2 tileIndex;
@@ -20,7 +20,7 @@ public abstract class Tile {
     }
 
     private Rectangle createNormalizedTileBox() {
-        Vector2 normalizedPos = CoordinateSystemHelper.tileIndexToVirtualUnits(tileIndex.x, tileIndex.y);
+        Vector2 normalizedPos = CoordinateSystemHelper.tileIndexToVirtualUnits(tileIndex);
         return new Rectangle(normalizedPos.x, normalizedPos.y, TILE_SIZE, TILE_SIZE);
     }
 
@@ -31,4 +31,6 @@ public abstract class Tile {
     public Rectangle getTileBox() {
         return tileBox;
     }
+
+    public abstract boolean isTraversable();
 }
