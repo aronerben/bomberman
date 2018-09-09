@@ -11,7 +11,7 @@ class SpaceTile extends Tile {
     }
 
     @Override
-    public boolean isTraversable() {
-        return true;
+    public boolean isWall() {
+        return false;
     }
 }

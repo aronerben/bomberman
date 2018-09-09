@@ -50,7 +50,8 @@ public class Map {
                 }
             }
         }
-        Vector2 zonePosition = CoordinateSystemHelper.tileIndexToVirtualUnits(new Vector2(0, 0));
+        Vector2 zonePosition = new Vector2();
+        CoordinateSystemHelper.tileIndexToVirtualUnits(new Vector2(0, 0), zonePosition);
         allowedZone = new Rectangle(zonePosition.x, zonePosition.y, MAP_TILES * TILE_SIZE, MAP_TILES * TILE_SIZE);
     }
 }

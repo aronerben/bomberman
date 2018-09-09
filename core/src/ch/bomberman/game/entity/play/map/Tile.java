@@ -20,7 +20,8 @@ public abstract class Tile {
     }
 
     private Rectangle createNormalizedTileBox() {
-        Vector2 normalizedPos = CoordinateSystemHelper.tileIndexToVirtualUnits(tileIndex);
+        Vector2 normalizedPos = new Vector2();
+        CoordinateSystemHelper.tileIndexToVirtualUnits(tileIndex, normalizedPos);
         return new Rectangle(normalizedPos.x, normalizedPos.y, TILE_SIZE, TILE_SIZE);
     }
 
@@ -32,5 +33,9 @@ public abstract class Tile {
         return tileBox;
     }
 
-    public abstract boolean isTraversable();
+    public Vector2 getTileIndex() {
+        return tileIndex;
+    }
+
+    public abstract boolean isWall();
 }

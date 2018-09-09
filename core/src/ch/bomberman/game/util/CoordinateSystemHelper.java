@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Vector2;
 import static ch.bomberman.game.entity.play.map.Map.MAP_TILES;
 import static ch.bomberman.game.entity.play.map.Tile.TILE_SIZE;
 
+//these functions might be called in the render loop => avoid memory leaks
 public class CoordinateSystemHelper {
 
     //TODO careful with camera/viewport later, remove this?
@@ -19,14 +20,14 @@ public class CoordinateSystemHelper {
         return new Vector2(Main.VIRTUAL_WIDTH / 2 - width / 2, Main.VIRTUAL_HEIGHT / 2 - height / 2);
     }
 
-    public static Vector2 tileIndexToVirtualUnits(Vector2 tileIndex) {
+    public static void tileIndexToVirtualUnits(Vector2 tileIndex, Vector2 virtualUnits) {
         Vector2 offset = CoordinateSystemHelper.getCenterCoord(MAP_TILES * TILE_SIZE, MAP_TILES * TILE_SIZE);
-        return new Vector2(tileIndex.x * TILE_SIZE + offset.x, tileIndex.y * TILE_SIZE + offset.y);
+        virtualUnits.set(tileIndex.x * TILE_SIZE + offset.x, tileIndex.y * TILE_SIZE + offset.y);
     }
 
-    public static Vector2 virtualUnitsToTileIndex(Rectangle position) {
+    public static void virtualUnitsToTileIndex(Rectangle position, Vector2 tileIndexPosition) {
         Vector2 offset = CoordinateSystemHelper.getCenterCoord(MAP_TILES * TILE_SIZE, MAP_TILES * TILE_SIZE);
-        return new Vector2((float)Math.floor(((position.x - offset.x) / TILE_SIZE)), (float)Math.floor(((position.y - offset.y) / TILE_SIZE)));
+        tileIndexPosition.set((float) Math.floor(((position.x - offset.x) / TILE_SIZE)), (float) Math.floor(((position.y - offset.y) / TILE_SIZE)));
     }
 
 }

@@ -11,7 +11,7 @@ class UnbreakableBlockTile extends Tile {
     }
 
     @Override
-    public boolean isTraversable() {
-        return false;
+    public boolean isWall() {
+        return true;
     }
 }
