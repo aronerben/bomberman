@@ -2,14 +2,13 @@ package ch.bomberman.game.entity.menu;
 
 import ch.bomberman.game.util.AssetCollection;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 
+import static ch.bomberman.game.util.KeyBindings.START;
+
 
 public class PlayButton {
-
-    private static final int START = Input.Keys.ENTER;
 
     public final static float BUTTON_WIDTH = 25;
     public final static float BUTTON_HEIGHT = 25;

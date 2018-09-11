@@ -1,13 +1,11 @@
 package ch.bomberman.game.entity.play.player;
 
 import ch.bomberman.game.entity.play.map.Map;
-import ch.bomberman.game.entity.play.map.Tile;
 import ch.bomberman.game.util.AssetCollection;
 import ch.bomberman.game.util.CoordinateSystemHelper;
+import ch.bomberman.game.util.PlayerCollisionResolver;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.IntArray;
@@ -16,15 +14,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import static ch.bomberman.game.entity.play.map.Tile.TILE_SIZE;
+import static ch.bomberman.game.util.KeyBindings.*;
 
 
 public class Player {
 
-    private final static float SPEED = 15;
-    private final static int UP = Input.Keys.W;
-    private final static int LEFT = Input.Keys.A;
-    private final static int DOWN = Input.Keys.S;
-    private final static int RIGHT = Input.Keys.D;
+    float SPEED = 15;
+
     private final static List<Integer> MOVEMENT_KEYS = Arrays.asList(UP, LEFT, DOWN, RIGHT);
 
     //TODO make these fields?
@@ -37,12 +33,9 @@ public class Player {
     private Vector2 tileIndexPosition;
     private Texture texture;
     private IntArray pressedMovementKeys;
+    private PlayerCollisionResolver collisionResolver;
 
-    private Rectangle intersectionPlayerOffset = new Rectangle();
-    private Rectangle intersectionNext = new Rectangle();
-
-    //TODO make tile indexes as position?
-
+    //TODO remove me
     private float waitTimeTemp = 0;
 
     public Player(Map map, int playerNumber) {
@@ -54,6 +47,7 @@ public class Player {
         playerBox = createNormalizedPlayerBox();
         //initially center player nicely on tile
         centerPlayerOnTile();
+        collisionResolver = new PlayerCollisionResolver(this.map, this);
     }
 
     private Rectangle createNormalizedPlayerBox() {
@@ -74,6 +68,14 @@ public class Player {
 
     public Texture getTexture() {
         return texture;
+    }
+
+    public int getPlayerNumber() {
+        return playerNumber;
+    }
+
+    public Vector2 getTileIndexPosition() {
+        return tileIndexPosition;
     }
 
     public void update(float dt) {
@@ -123,7 +125,7 @@ public class Player {
         }
 
         //the element with the highest index in the array is the latest keypress => use this input-key for movement
-        int curMovementKey = pressedMovementKeys.size == 0 ? Input.Keys.ANY_KEY : pressedMovementKeys.get(pressedMovementKeys.size - 1);
+        int curMovementKey = pressedMovementKeys.size == 0 ? MISC : pressedMovementKeys.get(pressedMovementKeys.size - 1);
 
         //select direction
         if(curMovementKey == LEFT) {
@@ -137,117 +139,15 @@ public class Player {
         }
 
         //only resolve collision if there was movement
-        if(curMovementKey != Input.Keys.ANY_KEY) {
-            resolveCollision(curMovementKey, deltaDistance);
+        if(curMovementKey != MISC) {
+            collisionResolver.resolveCollision(curMovementKey, deltaDistance);
         }
 
         //update tile index position
         CoordinateSystemHelper.virtualUnitsToTileIndex(playerBox, tileIndexPosition);
     }
 
-    private void resolveCollision(int curMovementKey, float deltaDistance) {
-        //check player somehow managed to get outside borders
-        if(!map.getAllowedZone().contains(playerBox)) {
-            //move him to starting position
-            movePlayerToTile(Map.STARTING_POSITIONS[playerNumber]);
-        }
-        resolveTileCollision(curMovementKey);
-    }
-
-    //TODO create collision resolution class
-    private void resolveTileCollision(int curMovementKey) {
-        //get movement direction moves and only check collision for the 3 tiles the player might touch
-        int rowAdd = 0;
-        int columnAdd = 0;
-
-        //encode relevant tile selection
-        if(curMovementKey == LEFT) {
-            columnAdd = -1;
-        } else if(curMovementKey == RIGHT) {
-            columnAdd = 1;
-        } else if(curMovementKey == UP) {
-            rowAdd = 1;
-        } else if(curMovementKey == DOWN) {
-            rowAdd = -1;
-        }
-
-        /*
-         * Since the player is smaller than a tile (width and height) he can only collide with two tiles at once.
-         * The players coordinates are in the corner of the sprite, so only the tile in the same row OR same column AND the
-         * tile in the row above OR column above are relevant for collision detection.
-         */
-        Tile tilePlayerOffset = map.getTiles()[(int) tileIndexPosition.x + columnAdd][(int) tileIndexPosition.y + rowAdd];
-        Tile tileNext = map.getTiles()[(int) tileIndexPosition.x + (columnAdd != 0 ? columnAdd : 1)][(int) tileIndexPosition.y + (rowAdd != 0 ? rowAdd : 1)];
-
-        Rectangle tilePlayerOffsetBox = tilePlayerOffset.getTileBox();
-        Rectangle tileNextBox = tileNext.getTileBox();
-
-        if(tilePlayerOffset.isWall() && Intersector.intersectRectangles(playerBox, tilePlayerOffsetBox, intersectionPlayerOffset)
-                || tileNext.isWall() && Intersector.intersectRectangles(playerBox, tileNextBox, intersectionNext)) {
-            if(curMovementKey == LEFT) {
-                playerBox.x = tilePlayerOffsetBox.x + TILE_SIZE;
-            } else if(curMovementKey == RIGHT) {
-                playerBox.x = tilePlayerOffsetBox.x - PLAYER_WIDTH;
-            } else if(curMovementKey == UP) {
-                playerBox.y = tilePlayerOffsetBox.y - PLAYER_HEIGHT;
-            } else if(curMovementKey == DOWN) {
-                playerBox.y = tilePlayerOffsetBox.y + TILE_SIZE;
-            }
-            //TODO CONTINUE HERE better calculation when to autowalk player (maybe intersection x/y * 1000 and THEN area? or just decide by case with height etc of intersections
-            if(!tilePlayerOffset.isWall() || !tileNext.isWall()) {
-                //TODO rewrite this
-                Tile spaceTile = !tileNext.isWall() ? tileNext : tilePlayerOffset;
-                Tile collisionTile = !tileNext.isWall() ? tilePlayerOffset : tileNext;
-                Rectangle spaceTileBox = spaceTile.getTileBox();
-                Rectangle collisionTileBox = collisionTile.getTileBox();
-                if(Vector2.dst(playerBox.x, playerBox.y, spaceTileBox.getX(), spaceTileBox.getY())
-                        < Vector2.dst(playerBox.x, playerBox.y, collisionTileBox.getX(), collisionTileBox.getY()))
-                    System.out.println(spaceTile.getTileIndex());
-            }
-        }
-
-//        for(int x = -1; x < 2; x++) {
-//            Tile tile = map.getTiles()[(int) tileIndexPosition.x + (isColumn ? index : x)][(int) tileIndexPosition.y + (isColumn ? x : index)];
-//            Rectangle tileBox = tile.getTileBox();
-//            if(Intersector.intersectRectangles(playerBox, tileBox, intersection)) {
-//
-//                if(!tile.isWall()) {
-//                    System.out.println("air");
-//                }
-//
-//
-//                //collision with non-traversable tile detected => stick player to colliding tile
-//                if(tile.isWall()) {
-//                    if(curMovementKey == LEFT) {
-//                        playerBox.x = tileBox.x + TILE_SIZE;
-//                    } else if(curMovementKey == RIGHT) {
-//                        playerBox.x = tileBox.x - PLAYER_WIDTH;
-//                    } else if(curMovementKey == UP) {
-//                        playerBox.y = tileBox.y - PLAYER_HEIGHT;
-//                    } else if(curMovementKey == DOWN) {
-//                        playerBox.y = tileBox.y + TILE_SIZE;
-//                    }
-//                }
-//
-////                if(intersection.x + intersection.width < playerBox.x + playerBox.width) {
-////                    playerBox.x = tileBox.x + TILE_SIZE;
-////                    System.out.println(CoordinateSystemHelper.virtualUnitsToTileIndex(playerBox));
-////                }
-////                if(intersection.x > playerBox.x) {
-////                    System.out.println("test");
-////                    playerBox.x = tileBox.x - PLAYER_WIDTH;
-////                }
-////                if(intersection.y > playerBox.y) {
-////                    playerBox.y = tileBox.y - PLAYER_HEIGHT;
-////                }
-////                if(intersection.y + intersection.height < playerBox.y + playerBox.height) {
-////                    playerBox.y = tileBox.y + TILE_SIZE;
-////                }
-//            }
-//        }
-    }
-
-    private void movePlayerToTile(Vector2 tileIndex) {
+    public void movePlayerToTile(Vector2 tileIndex) {
         tileIndexPosition = tileIndex;
         Vector2 position = new Vector2();
         CoordinateSystemHelper.tileIndexToVirtualUnits(tileIndex, position);
@@ -255,8 +155,8 @@ public class Player {
         centerPlayerOnTile();
     }
 
+
     public void dispose() {
         texture.dispose();
     }
-
 }
