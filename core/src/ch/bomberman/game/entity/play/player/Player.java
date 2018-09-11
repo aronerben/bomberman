@@ -38,6 +38,12 @@ public class Player {
     //TODO remove me
     private float waitTimeTemp = 0;
 
+    //animation related fields
+    private boolean animated;
+    private int animatedMoveKey;
+    private int animatedMoveDirection;
+    private float animatedDistance;
+
     public Player(Map map, int playerNumber) {
         this.map = map;
         this.playerNumber = playerNumber;
@@ -128,23 +134,69 @@ public class Player {
         int curMovementKey = pressedMovementKeys.size == 0 ? MISC : pressedMovementKeys.get(pressedMovementKeys.size - 1);
 
         //select direction
-        if(curMovementKey == LEFT) {
-            playerBox.x -= deltaDistance;
-        } else if(curMovementKey == RIGHT) {
-            playerBox.x += deltaDistance;
-        } else if(curMovementKey == UP) {
-            playerBox.y += deltaDistance;
-        } else if(curMovementKey == DOWN) {
-            playerBox.y -= deltaDistance;
-        }
+        moveDirection(curMovementKey, deltaDistance);
 
         //only resolve collision if there was movement
         if(curMovementKey != MISC) {
-            collisionResolver.resolveCollision(curMovementKey, deltaDistance);
+            collisionResolver.resolveCollision(curMovementKey);
         }
 
         //update tile index position
         CoordinateSystemHelper.virtualUnitsToTileIndex(playerBox, tileIndexPosition);
+    }
+
+    private void moveDirection(int curMovementKey, float deltaDistance) {
+        if(curMovementKey == LEFT) {
+            if(!animated || curMovementKey != animatedMoveKey) {
+                playerBox.x -= deltaDistance;
+                animated = false;
+            } else {
+                animateMoveDirection(deltaDistance);
+            }
+        } else if(curMovementKey == RIGHT) {
+            if(!animated || curMovementKey != animatedMoveKey) {
+                playerBox.x += deltaDistance;
+                animated = false;
+            } else {
+                animateMoveDirection(deltaDistance);
+            }
+        } else if(curMovementKey == UP) {
+            if(!animated || curMovementKey != animatedMoveKey) {
+                playerBox.y += deltaDistance;
+                animated = false;
+            } else {
+                animateMoveDirection(deltaDistance);
+            }
+        } else if(curMovementKey == DOWN) {
+            if(!animated || curMovementKey != animatedMoveKey) {
+                playerBox.y -= deltaDistance;
+                animated = false;
+            } else {
+                animateMoveDirection(deltaDistance);
+            }
+        }
+    }
+
+    //TODO CONTINUE HERE, MAKE PLAYER FLUSH ON BOX, BEAUTIFY CODE (EXTRACTIONS AND BOOL SETTING)
+    private void animateMoveDirection(float deltaDistance) {
+        if(animatedMoveDirection == LEFT) {
+            playerBox.x -= deltaDistance;
+            animatedDistance -= deltaDistance;
+        } else if(animatedMoveDirection == RIGHT) {
+            playerBox.x += deltaDistance;
+            animatedDistance -= deltaDistance;
+        } else if(animatedMoveDirection == UP) {
+            playerBox.y += deltaDistance;
+            animatedDistance -= deltaDistance;
+        } else if(animatedMoveDirection == DOWN) {
+            playerBox.y -= deltaDistance;
+            animatedDistance -= deltaDistance;
+        }
+
+        //over animation distance => stop animation
+        if(animatedDistance < 0) {
+            animated = false;
+        }
     }
 
     public void movePlayerToTile(Vector2 tileIndex) {
@@ -155,8 +207,14 @@ public class Player {
         centerPlayerOnTile();
     }
 
-
     public void dispose() {
         texture.dispose();
+    }
+
+    public void collisionAnimate(int curMovementKey, int direction, float distance) {
+        animated = true;
+        animatedMoveKey = curMovementKey;
+        animatedMoveDirection = direction;
+        animatedDistance = distance;
     }
 }
