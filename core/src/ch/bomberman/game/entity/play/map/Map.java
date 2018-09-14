@@ -1,6 +1,6 @@
 package ch.bomberman.game.entity.play.map;
 
-import ch.bomberman.game.util.CoordinateSystemHelper;
+import ch.bomberman.game.util.MapTileHelper;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
@@ -51,7 +51,15 @@ public class Map {
             }
         }
         Vector2 zonePosition = new Vector2();
-        CoordinateSystemHelper.tileIndexToVirtualUnits(new Vector2(0, 0), zonePosition);
+        MapTileHelper.tileIndexToVirtualUnits(new Vector2(0, 0), zonePosition);
         allowedZone = new Rectangle(zonePosition.x, zonePosition.y, MAP_TILES * TILE_SIZE, MAP_TILES * TILE_SIZE);
+    }
+
+    public void dispose() {
+        for(int i = 0; i < MAP_TILES; i++) {
+            for(int j = 0; j < MAP_TILES; j++) {
+                tiles[i][j].getTexture().dispose();
+            }
+        }
     }
 }

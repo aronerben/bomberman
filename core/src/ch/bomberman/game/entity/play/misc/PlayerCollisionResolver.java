@@ -1,4 +1,4 @@
-package ch.bomberman.game.util;
+package ch.bomberman.game.entity.play.misc;
 
 import ch.bomberman.game.entity.play.map.Map;
 import ch.bomberman.game.entity.play.map.Tile;
@@ -34,7 +34,7 @@ public class PlayerCollisionResolver {
 
     public void resolveCollision(int curMovementKey) {
         //check player somehow managed to get outside borders
-        if(!map.getAllowedZone().contains(player.getPlayerBox())) {
+        if(!map.getAllowedZone().contains(player.getBox())) {
             //move him to starting position
             player.movePlayerToTile(Map.STARTING_POSITIONS[player.getPlayerNumber()]);
         }
@@ -61,46 +61,46 @@ public class PlayerCollisionResolver {
          * The players coordinates are in the corner of the sprite, so only the tile in the same row OR same column AND the
          * tile in the row above OR column above are relevant for collision detection.
          */
-        Vector2 playerTileIndexPosition = player.getTileIndexPosition();
-        Tile tilePlayerOffset = map.getTiles()[(int) playerTileIndexPosition.x + columnAdd][(int) playerTileIndexPosition.y + rowAdd];
-        Tile tileNext = map.getTiles()[(int) playerTileIndexPosition.x + (columnAdd != 0 ? columnAdd : 1)][(int) playerTileIndexPosition.y + (rowAdd != 0 ? rowAdd : 1)];
+        Vector2 playerTileIndex = player.getTileIndex();
+        Tile tilePlayerOffset = map.getTiles()[(int) playerTileIndex.x + columnAdd][(int) playerTileIndex.y + rowAdd];
+        Tile tileNext = map.getTiles()[(int) playerTileIndex.x + (columnAdd != 0 ? columnAdd : 1)][(int) playerTileIndex.y + (rowAdd != 0 ? rowAdd : 1)];
 
-        intersectTilesWithPlayer(curMovementKey, playerTileIndexPosition, tilePlayerOffset, tileNext, player.getPlayerBox());
+        intersectTilesWithPlayer(curMovementKey, playerTileIndex, tilePlayerOffset, tileNext, player.getBox());
     }
 
-    private void intersectTilesWithPlayer(int curMovementKey, Vector2 playerTileIndexPosition, Tile tilePlayerOffset, Tile tileNext, Rectangle playerBox) {
-        Rectangle tilePlayerOffsetBox = tilePlayerOffset.getTileBox();
-        Rectangle tileNextBox = tileNext.getTileBox();
+    private void intersectTilesWithPlayer(int curMovementKey, Vector2 playerTileIndex, Tile tilePlayerOffset, Tile tileNext, Rectangle playerBox) {
+        Rectangle tilePlayerOffsetBox = tilePlayerOffset.getBox();
+        Rectangle tileNextBox = tileNext.getBox();
         //use vars to ensure evaluation of both
         boolean playerIntersectsOffsetTile = Intersector.intersectRectangles(playerBox, tilePlayerOffsetBox, intersectionPlayerOffset);
         boolean playerIntersectsNextTile = Intersector.intersectRectangles(playerBox, tileNextBox, intersectionNext);
 
-        if(tilePlayerOffset.isWall() && playerIntersectsOffsetTile
-                || tileNext.isWall() && playerIntersectsNextTile) {
+        if(!tilePlayerOffset.isTraversable() && playerIntersectsOffsetTile
+                || !tileNext.isTraversable() && playerIntersectsNextTile) {
 
             stickPlayerToBox(curMovementKey, playerBox, tilePlayerOffsetBox);
 
-            if(!tilePlayerOffset.isWall() || !tileNext.isWall()) {
-                Tile spaceTile = !tileNext.isWall() ? tileNext : tilePlayerOffset;
-                Rectangle spaceIntersection = !tileNext.isWall() ? intersectionNext : intersectionPlayerOffset;
-                Rectangle collisionIntersection = !tileNext.isWall() ? intersectionPlayerOffset : intersectionNext;
+            if(tilePlayerOffset.isTraversable() || tileNext.isTraversable()) {
+                Tile spaceTile = tileNext.isTraversable() ? tileNext : tilePlayerOffset;
+                Rectangle spaceIntersection = tileNext.isTraversable() ? intersectionNext : intersectionPlayerOffset;
+                Rectangle collisionIntersection = tileNext.isTraversable() ? intersectionPlayerOffset : intersectionNext;
 
                 if(OBSTACLE_LENIENCY_MULTIPLIER * spaceIntersection.area() > collisionIntersection.area()) {
-                    initPlayerAnimation(curMovementKey, playerTileIndexPosition, spaceTile, collisionIntersection);
+                    initPlayerAnimation(curMovementKey, playerTileIndex, spaceTile, collisionIntersection);
                 }
             }
         }
     }
 
-    private void initPlayerAnimation(int curMovementKey, Vector2 playerTileIndexPosition, Tile spaceTile, Rectangle collisionIntersection) {
+    private void initPlayerAnimation(int curMovementKey, Vector2 playerTileIndex, Tile spaceTile, Rectangle collisionIntersection) {
         //abuse direction keys as directions
         int direction;
         float distance;
         if(curMovementKey == LEFT || curMovementKey == RIGHT) {
-            direction = playerTileIndexPosition.y == spaceTile.getTileIndex().y ? DOWN : UP;
+            direction = playerTileIndex.y == spaceTile.getTileIndex().y ? DOWN : UP;
             distance = collisionIntersection.getHeight();
         } else {
-            direction = playerTileIndexPosition.x == spaceTile.getTileIndex().x ? LEFT : RIGHT;
+            direction = playerTileIndex.x == spaceTile.getTileIndex().x ? LEFT : RIGHT;
             distance = collisionIntersection.getWidth();
         }
         //reset intersection boxes

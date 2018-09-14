@@ -12,4 +12,5 @@ public class AssetCollection {
     public static final String UNBREAKABLE_BLOCK_TILE = "unbreakable_block_tile.png";
     public static final String POWER_UP_TILE = "power_up_tile.png";
     public static final String SPACE_TILE = "power_up_tile.png";
+    public static final String BOMB = "bomb.png";
 }

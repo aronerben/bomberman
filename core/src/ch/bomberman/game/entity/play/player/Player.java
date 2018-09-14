@@ -1,23 +1,26 @@
 package ch.bomberman.game.entity.play.player;
 
 import ch.bomberman.game.entity.play.map.Map;
+import ch.bomberman.game.entity.play.map.SpaceTile;
+import ch.bomberman.game.entity.play.map.Tile;
+import ch.bomberman.game.entity.play.misc.MapDrawable;
+import ch.bomberman.game.entity.play.misc.PlayerCollisionResolver;
 import ch.bomberman.game.util.AssetCollection;
-import ch.bomberman.game.util.CoordinateSystemHelper;
-import ch.bomberman.game.util.PlayerCollisionResolver;
+import ch.bomberman.game.util.MapTileHelper;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.IntArray;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static ch.bomberman.game.entity.play.map.Tile.TILE_SIZE;
+import static ch.bomberman.game.entity.play.player.Bomb.BOMB_LIMIT_ON_MAP;
 import static ch.bomberman.game.util.KeyBindings.*;
 
 
-public class Player {
+public class Player extends MapDrawable {
 
     private float SPEED = 20;
 
@@ -29,11 +32,11 @@ public class Player {
 
     private final Map map;
     private final int playerNumber;
-    private Rectangle playerBox;
-    private Vector2 tileIndexPosition;
-    private Texture texture;
     private IntArray pressedMovementKeys;
     private PlayerCollisionResolver collisionResolver;
+
+    private List<Bomb> bombs = new ArrayList<>();
+    private boolean bombKeyPressed = false;
 
     //TODO remove me
     private float waitTimeTemp = 0;
@@ -45,47 +48,25 @@ public class Player {
     private float animatedDistance;
 
     public Player(Map map, int playerNumber) {
+        super(Map.STARTING_POSITIONS[playerNumber], new Texture(AssetCollection.PLAYER), PLAYER_WIDTH, PLAYER_HEIGHT);
         this.map = map;
         this.playerNumber = playerNumber;
-        texture = new Texture(AssetCollection.PLAYER);
         pressedMovementKeys = new IntArray(MOVEMENT_KEYS.size());
-        tileIndexPosition = Map.STARTING_POSITIONS[playerNumber];
-        playerBox = createNormalizedPlayerBox();
         //initially center player nicely on tile
-        centerPlayerOnTile();
+        MapTileHelper.centerObjectOnTile(getBox(), PLAYER_WIDTH, PLAYER_HEIGHT);
         collisionResolver = new PlayerCollisionResolver(this.map, this);
-    }
-
-    private Rectangle createNormalizedPlayerBox() {
-        Vector2 normalizedPos = new Vector2();
-        CoordinateSystemHelper.tileIndexToVirtualUnits(tileIndexPosition, normalizedPos);
-        return new Rectangle(normalizedPos.x, normalizedPos.y, PLAYER_WIDTH, PLAYER_HEIGHT);
-    }
-
-    private void centerPlayerOnTile() {
-        playerBox.setPosition(
-                playerBox.x + TILE_SIZE / 2f - PLAYER_WIDTH / 2f,
-                playerBox.y + TILE_SIZE / 2f - PLAYER_HEIGHT / 2f);
-    }
-
-    public Rectangle getPlayerBox() {
-        return playerBox;
-    }
-
-    public Texture getTexture() {
-        return texture;
     }
 
     public int getPlayerNumber() {
         return playerNumber;
     }
 
-    public Vector2 getTileIndexPosition() {
-        return tileIndexPosition;
+    public List<Bomb> getBombs() {
+        return bombs;
     }
 
     public void update(float dt) {
-        move(dt);
+        handleInput(dt);
         //TODO more update components
         debug(dt);
     }
@@ -95,8 +76,8 @@ public class Player {
 
         waitTimeTemp += dt;
         if(waitTimeTemp > 0.1f) {
-//            System.out.println(tileIndexPosition);
-//            System.out.println(map.getTiles()[(int)tileIndexPosition.y][(int)tileIndexPosition.x].getClass().getName());
+//            System.out.println(playerTileIndex);
+//            System.out.println(map.getTiles()[(int)playerTileIndex.y][(int)playerTileIndex.x].getClass().getName());
 
 //            System.out.println(
 //                                    "x: " + getPlayerBox().x +
@@ -108,6 +89,44 @@ public class Player {
 //            );
             Gdx.app.debug("HEAP", String.valueOf(Gdx.app.getJavaHeap()));
             waitTimeTemp = 0;
+        }
+    }
+
+    //react to all possible inputs
+    private void handleInput(float dt) {
+        move(dt);
+        placeBomb(dt);
+    }
+
+    //TODO CONTINUE WITH BOMB COLLISION HANDLING AND EXPLOSIONS
+    //TODO THEN DO PLAYER AND BOMB ANIMATIONS WITH SPRITESHEET, SEE WIKI FOR ANIMATION
+    //TODO make animation fps dependent on speed powerups
+    //TODO register new textures in textureatlas, create subfolders for assets
+    private void placeBomb(float dt) {
+        //disallow bomb spawn when: holding bomb key, too many bombs, or current tile is not suitable for bomb
+        if(Gdx.input.isKeyPressed(BOMB) && !bombKeyPressed && bombs.size() <= BOMB_LIMIT_ON_MAP && allowBombOnCurrentTile()) {
+            Bomb bomb = new Bomb(getPlayerCenterTileIndex());
+            bombs.add(bomb);
+            //TODO allow placing bombs on powerups?
+            ((SpaceTile) getCurrentPlayerCenterTile()).setBomb(bomb);
+            bombKeyPressed = true;
+        } else if(!Gdx.input.isKeyPressed(BOMB)) {
+            bombKeyPressed = false;
+        }
+    }
+
+    private Tile getCurrentPlayerCenterTile() {
+        return map.getTiles()[(int) getPlayerCenterTileIndex().x][(int) getPlayerCenterTileIndex().y];
+    }
+
+    private boolean allowBombOnCurrentTile() {
+        Tile tile = getCurrentPlayerCenterTile();
+        if(tile.canContainObject()) {
+            //check if space tile already has bomb
+            //TODO allow placing bombs on powerups?
+            return ((SpaceTile) tile).getBomb() == null;
+        } else {
+            return false;
         }
     }
 
@@ -144,7 +163,7 @@ public class Player {
         }
 
         //update tile index position
-        CoordinateSystemHelper.virtualUnitsToTileIndex(playerBox, tileIndexPosition);
+        MapTileHelper.virtualUnitsToTileIndex(getBox(), getTileIndex());
     }
 
     private void moveDirection(int curMovementKey, float deltaDistance) {
@@ -168,26 +187,33 @@ public class Player {
 
     private void mapDirectionToMovement(int directionKey, float deltaDistance) {
         if(directionKey == LEFT) {
-            playerBox.x -= deltaDistance;
+            getBox().x -= deltaDistance;
         } else if(directionKey == RIGHT) {
-            playerBox.x += deltaDistance;
+            getBox().x += deltaDistance;
         } else if(directionKey == UP) {
-            playerBox.y += deltaDistance;
+            getBox().y += deltaDistance;
         } else if(directionKey == DOWN) {
-            playerBox.y -= deltaDistance;
+            getBox().y -= deltaDistance;
         }
     }
 
+    private Vector2 getPlayerCenterTileIndex() {
+        Vector2 tileIndex = new Vector2(getBox().x + PLAYER_WIDTH / 2, getBox().y + PLAYER_HEIGHT / 2);
+        MapTileHelper.virtualUnitsToTileIndex(tileIndex, tileIndex);
+        return tileIndex;
+    }
+
     public void movePlayerToTile(Vector2 tileIndex) {
-        tileIndexPosition = tileIndex;
+        setTileIndex(tileIndex);
         Vector2 position = new Vector2();
-        CoordinateSystemHelper.tileIndexToVirtualUnits(tileIndex, position);
-        playerBox.setPosition(position);
-        centerPlayerOnTile();
+        MapTileHelper.tileIndexToVirtualUnits(tileIndex, position);
+        getBox().setPosition(position);
+        MapTileHelper.centerObjectOnTile(getBox(), PLAYER_WIDTH, PLAYER_HEIGHT);
     }
 
     public void dispose() {
-        texture.dispose();
+        bombs.forEach(bomb -> bomb.getTexture().dispose());
+        getTexture().dispose();
     }
 
     public void collisionAnimate(int curMovementKey, int direction, float distance) {

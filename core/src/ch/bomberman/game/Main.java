@@ -11,7 +11,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-//TODO make bombs poolable objects
+//TODO dispose of all textures
 //TODO add debug
 //TODO add sounds
 public class Main extends ApplicationAdapter {

@@ -11,7 +11,12 @@ class BreakableBlockTile extends Tile {
     }
 
     @Override
-    public boolean isWall() {
-        return true;
+    public boolean isTraversable() {
+        return false;
+    }
+
+    @Override
+    public boolean canContainObject() {
+        return false;
     }
 }
