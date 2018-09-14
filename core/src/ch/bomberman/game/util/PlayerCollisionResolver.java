@@ -14,6 +14,13 @@ import static ch.bomberman.game.util.KeyBindings.*;
 
 public class PlayerCollisionResolver {
 
+    //TODO tweak this multiplier
+    /*
+     * Handles how much of the player can collide with a wall and still go around it to a space tile.
+     * (Provided there is a space tile around the wall tile)
+     */
+    private static final int OBSTACLE_LENIENCY_MULTIPLIER = 2;
+
     private final Player player;
     private final Map map;
 
@@ -34,7 +41,6 @@ public class PlayerCollisionResolver {
         resolveTileCollision(curMovementKey);
     }
 
-    //TODO extract lots to methods
     private void resolveTileCollision(int curMovementKey) {
         int rowAdd = 0;
         int columnAdd = 0;
@@ -59,46 +65,60 @@ public class PlayerCollisionResolver {
         Tile tilePlayerOffset = map.getTiles()[(int) playerTileIndexPosition.x + columnAdd][(int) playerTileIndexPosition.y + rowAdd];
         Tile tileNext = map.getTiles()[(int) playerTileIndexPosition.x + (columnAdd != 0 ? columnAdd : 1)][(int) playerTileIndexPosition.y + (rowAdd != 0 ? rowAdd : 1)];
 
-        Rectangle playerBox = player.getPlayerBox();
+        intersectTilesWithPlayer(curMovementKey, playerTileIndexPosition, tilePlayerOffset, tileNext, player.getPlayerBox());
+    }
+
+    private void intersectTilesWithPlayer(int curMovementKey, Vector2 playerTileIndexPosition, Tile tilePlayerOffset, Tile tileNext, Rectangle playerBox) {
         Rectangle tilePlayerOffsetBox = tilePlayerOffset.getTileBox();
         Rectangle tileNextBox = tileNext.getTileBox();
-
-        //use local vars to ensure evaluation of both
+        //use vars to ensure evaluation of both
         boolean playerIntersectsOffsetTile = Intersector.intersectRectangles(playerBox, tilePlayerOffsetBox, intersectionPlayerOffset);
         boolean playerIntersectsNextTile = Intersector.intersectRectangles(playerBox, tileNextBox, intersectionNext);
 
         if(tilePlayerOffset.isWall() && playerIntersectsOffsetTile
                 || tileNext.isWall() && playerIntersectsNextTile) {
-            //stick player to the colliding wall
-            if(curMovementKey == LEFT) {
-                playerBox.x = tilePlayerOffsetBox.x + TILE_SIZE;
-            } else if(curMovementKey == RIGHT) {
-                playerBox.x = tilePlayerOffsetBox.x - PLAYER_WIDTH;
-            } else if(curMovementKey == UP) {
-                playerBox.y = tilePlayerOffsetBox.y - PLAYER_HEIGHT;
-            } else if(curMovementKey == DOWN) {
-                playerBox.y = tilePlayerOffsetBox.y + TILE_SIZE;
-            }
+
+            stickPlayerToBox(curMovementKey, playerBox, tilePlayerOffsetBox);
+
             if(!tilePlayerOffset.isWall() || !tileNext.isWall()) {
                 Tile spaceTile = !tileNext.isWall() ? tileNext : tilePlayerOffset;
                 Rectangle spaceIntersection = !tileNext.isWall() ? intersectionNext : intersectionPlayerOffset;
                 Rectangle collisionIntersection = !tileNext.isWall() ? intersectionPlayerOffset : intersectionNext;
-                //TODO tweak this multiplier
-                if(5 * spaceIntersection.area() > collisionIntersection.area()) {
-                    //abuse direction keys as directions
-                    int direction;
-                    float distance;
-                    if(curMovementKey == LEFT || curMovementKey == RIGHT) {
-                        direction = playerTileIndexPosition.y == spaceTile.getTileIndex().y ? DOWN : UP;
-                        distance = collisionIntersection.getHeight();
-                    } else {
-                        direction = playerTileIndexPosition.x == spaceTile.getTileIndex().x ? LEFT : RIGHT;
-                        distance = collisionIntersection.getWidth();
-                    }
 
-                    player.collisionAnimate(curMovementKey, direction, distance);
+                if(OBSTACLE_LENIENCY_MULTIPLIER * spaceIntersection.area() > collisionIntersection.area()) {
+                    initPlayerAnimation(curMovementKey, playerTileIndexPosition, spaceTile, collisionIntersection);
                 }
             }
+        }
+    }
+
+    private void initPlayerAnimation(int curMovementKey, Vector2 playerTileIndexPosition, Tile spaceTile, Rectangle collisionIntersection) {
+        //abuse direction keys as directions
+        int direction;
+        float distance;
+        if(curMovementKey == LEFT || curMovementKey == RIGHT) {
+            direction = playerTileIndexPosition.y == spaceTile.getTileIndex().y ? DOWN : UP;
+            distance = collisionIntersection.getHeight();
+        } else {
+            direction = playerTileIndexPosition.x == spaceTile.getTileIndex().x ? LEFT : RIGHT;
+            distance = collisionIntersection.getWidth();
+        }
+        //reset intersection boxes
+        intersectionNext.set(0, 0, 0, 0);
+        intersectionPlayerOffset.set(0, 0, 0, 0);
+        player.collisionAnimate(curMovementKey, direction, distance);
+    }
+
+    private void stickPlayerToBox(int curMovementKey, Rectangle playerBox, Rectangle tilePlayerOffsetBox) {
+        //stick player to the colliding wall
+        if(curMovementKey == LEFT) {
+            playerBox.x = tilePlayerOffsetBox.x + TILE_SIZE;
+        } else if(curMovementKey == RIGHT) {
+            playerBox.x = tilePlayerOffsetBox.x - PLAYER_WIDTH;
+        } else if(curMovementKey == UP) {
+            playerBox.y = tilePlayerOffsetBox.y - PLAYER_HEIGHT;
+        } else if(curMovementKey == DOWN) {
+            playerBox.y = tilePlayerOffsetBox.y + TILE_SIZE;
         }
     }
 }

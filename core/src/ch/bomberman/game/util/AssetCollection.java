@@ -1,11 +1,15 @@
 package ch.bomberman.game.util;
 
-public interface AssetCollection {
+//asset reference collection, cant be instantiated
+public class AssetCollection {
+    private AssetCollection() {
+    }
+
     //TODO use textureatlas for textures
-    String PLAYER = "badlogic.jpg";
-    String PLAY_BUTTON = "play_button.png";
-    String BREAKABLE_BLOCK_TILE = "breakable_block_tile.png";
-    String UNBREAKABLE_BLOCK_TILE = "unbreakable_block_tile.png";
-    String POWER_UP_TILE = "power_up_tile.png";
-    String SPACE_TILE = "power_up_tile.png";
+    public static final String PLAYER = "badlogic.jpg";
+    public static final String PLAY_BUTTON = "play_button.png";
+    public static final String BREAKABLE_BLOCK_TILE = "breakable_block_tile.png";
+    public static final String UNBREAKABLE_BLOCK_TILE = "unbreakable_block_tile.png";
+    public static final String POWER_UP_TILE = "power_up_tile.png";
+    public static final String SPACE_TILE = "power_up_tile.png";
 }

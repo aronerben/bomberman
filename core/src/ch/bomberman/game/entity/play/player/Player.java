@@ -19,13 +19,13 @@ import static ch.bomberman.game.util.KeyBindings.*;
 
 public class Player {
 
-    float SPEED = 15;
+    private float SPEED = 20;
 
     private final static List<Integer> MOVEMENT_KEYS = Arrays.asList(UP, LEFT, DOWN, RIGHT);
 
     //TODO make these fields?
-    public final static float PLAYER_WIDTH = 4;
-    public final static float PLAYER_HEIGHT = 4;
+    public final static float PLAYER_WIDTH = 5;
+    public final static float PLAYER_HEIGHT = 5;
 
     private final Map map;
     private final int playerNumber;
@@ -106,7 +106,7 @@ public class Player {
 //                                            " aspect ratio: " + getPlayerBox().getAspectRatio()
 //
 //            );
-//            Gdx.app.debug("HEAP", String.valueOf(Gdx.app.getJavaHeap()));
+            Gdx.app.debug("HEAP", String.valueOf(Gdx.app.getJavaHeap()));
             waitTimeTemp = 0;
         }
     }
@@ -139,6 +139,8 @@ public class Player {
         //only resolve collision if there was movement
         if(curMovementKey != MISC) {
             collisionResolver.resolveCollision(curMovementKey);
+        } else if(animated) {
+            animated = false;
         }
 
         //update tile index position
@@ -146,56 +148,33 @@ public class Player {
     }
 
     private void moveDirection(int curMovementKey, float deltaDistance) {
-        if(curMovementKey == LEFT) {
-            if(!animated || curMovementKey != animatedMoveKey) {
-                playerBox.x -= deltaDistance;
-                animated = false;
-            } else {
-                animateMoveDirection(deltaDistance);
-            }
-        } else if(curMovementKey == RIGHT) {
-            if(!animated || curMovementKey != animatedMoveKey) {
-                playerBox.x += deltaDistance;
-                animated = false;
-            } else {
-                animateMoveDirection(deltaDistance);
-            }
-        } else if(curMovementKey == UP) {
-            if(!animated || curMovementKey != animatedMoveKey) {
-                playerBox.y += deltaDistance;
-                animated = false;
-            } else {
-                animateMoveDirection(deltaDistance);
-            }
-        } else if(curMovementKey == DOWN) {
-            if(!animated || curMovementKey != animatedMoveKey) {
-                playerBox.y -= deltaDistance;
-                animated = false;
-            } else {
-                animateMoveDirection(deltaDistance);
-            }
+        if(animated && curMovementKey == animatedMoveKey) {
+            moveAnimatedDirection(deltaDistance);
+        } else {
+            animated = false;
+            mapDirectionToMovement(curMovementKey, deltaDistance);
         }
     }
 
-    //TODO CONTINUE HERE, MAKE PLAYER FLUSH ON BOX, BEAUTIFY CODE (EXTRACTIONS AND BOOL SETTING)
-    private void animateMoveDirection(float deltaDistance) {
-        if(animatedMoveDirection == LEFT) {
-            playerBox.x -= deltaDistance;
-            animatedDistance -= deltaDistance;
-        } else if(animatedMoveDirection == RIGHT) {
-            playerBox.x += deltaDistance;
-            animatedDistance -= deltaDistance;
-        } else if(animatedMoveDirection == UP) {
-            playerBox.y += deltaDistance;
-            animatedDistance -= deltaDistance;
-        } else if(animatedMoveDirection == DOWN) {
-            playerBox.y -= deltaDistance;
-            animatedDistance -= deltaDistance;
-        }
-
+    private void moveAnimatedDirection(float deltaDistance) {
+        animatedDistance -= deltaDistance;
         //over animation distance => stop animation
         if(animatedDistance < 0) {
             animated = false;
+            deltaDistance += animatedDistance;
+        }
+        mapDirectionToMovement(animatedMoveDirection, deltaDistance);
+    }
+
+    private void mapDirectionToMovement(int directionKey, float deltaDistance) {
+        if(directionKey == LEFT) {
+            playerBox.x -= deltaDistance;
+        } else if(directionKey == RIGHT) {
+            playerBox.x += deltaDistance;
+        } else if(directionKey == UP) {
+            playerBox.y += deltaDistance;
+        } else if(directionKey == DOWN) {
+            playerBox.y -= deltaDistance;
         }
     }
 
@@ -213,8 +192,11 @@ public class Player {
 
     public void collisionAnimate(int curMovementKey, int direction, float distance) {
         animated = true;
+        //key that caused the collision animation (used to check if this key is being pressed continuously)
         animatedMoveKey = curMovementKey;
+        //calculated animation direction
         animatedMoveDirection = direction;
+        //distance to the next row which the player is being animated to
         animatedDistance = distance;
     }
 }
