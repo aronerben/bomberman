@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.Vector2;
 
 public abstract class Tile extends MapDrawable {
     //TODO width and height separate?
-    public static final float TILE_SIZE = 6;
+    public static final int TILE_SIZE = 6;
 
     Tile(Texture texture, Vector2 tileIndex) {
         super(tileIndex, texture, TILE_SIZE, TILE_SIZE);

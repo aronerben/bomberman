@@ -7,10 +7,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
 
 import static ch.bomberman.game.entity.play.map.Map.MAP_TILES;
-import static ch.bomberman.game.entity.play.map.Tile.TILE_SIZE;
-import static ch.bomberman.game.entity.play.player.Bomb.BOMB_SIZE;
-import static ch.bomberman.game.entity.play.player.Player.PLAYER_HEIGHT;
-import static ch.bomberman.game.entity.play.player.Player.PLAYER_WIDTH;
 
 public class PlayActivity extends Activity {
 
@@ -46,17 +42,16 @@ public class PlayActivity extends Activity {
         for(int i = 0; i < MAP_TILES; i++) {
             for(int j = 0; j < MAP_TILES; j++) {
                 Tile curTile = tiles[i][j];
-                batch.draw(curTile.getTexture(), curTile.getBox().x, curTile.getBox().y, TILE_SIZE, TILE_SIZE);
+                curTile.getObject().draw(batch);
             }
         }
     }
 
     private void drawPlayObjects(SpriteBatch batch) {
         mans.forEach(player -> {
-            batch.draw(player.getTexture(), player.getBox().x, player.getBox().y, PLAYER_WIDTH, PLAYER_HEIGHT);
             player.getBombs().forEach(
-                    bomb -> batch.draw(bomb.getTexture(), bomb.getBox().x, bomb.getBox().y, BOMB_SIZE, BOMB_SIZE)
-            );
+                    bomb -> bomb.getObject().draw(batch));
+            player.getObject().draw(batch);
         });
     }
 

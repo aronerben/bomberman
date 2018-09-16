@@ -58,7 +58,7 @@ public class Map {
     public void dispose() {
         for(int i = 0; i < MAP_TILES; i++) {
             for(int j = 0; j < MAP_TILES; j++) {
-                tiles[i][j].getTexture().dispose();
+                tiles[i][j].getObject().getTexture().dispose();
             }
         }
     }

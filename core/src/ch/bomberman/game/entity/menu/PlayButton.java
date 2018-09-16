@@ -1,5 +1,6 @@
 package ch.bomberman.game.entity.menu;
 
+import ch.bomberman.game.Main;
 import ch.bomberman.game.util.AssetCollection;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
@@ -10,16 +11,14 @@ import static ch.bomberman.game.util.KeyBindings.START;
 
 public class PlayButton {
 
-    public final static float BUTTON_WIDTH = 25;
-    public final static float BUTTON_HEIGHT = 25;
+    private final static int BUTTON_WIDTH = 13;
+    private final static int BUTTON_HEIGHT = 16;
 
     private Sprite sprite;
 
     public PlayButton() {
-        //TODO position properly (careful with camera and viewport)
-        sprite = new Sprite(new Texture(AssetCollection.PLAY_BUTTON));
-        sprite.setSize(BUTTON_WIDTH, BUTTON_HEIGHT);
-        sprite.setOriginCenter();
+        sprite = new Sprite(new Texture(AssetCollection.PLAY_BUTTON), BUTTON_WIDTH, BUTTON_HEIGHT);
+        sprite.setOriginBasedPosition(Main.VIRTUAL_WIDTH / 2, Main.VIRTUAL_HEIGHT / 2);
     }
 
     public Sprite getSprite() {

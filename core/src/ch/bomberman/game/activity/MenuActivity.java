@@ -21,7 +21,7 @@ public class MenuActivity extends Activity {
 
     @Override
     public void draw(SpriteBatch batch) {
-        batch.draw(playButton.getSprite(), (int) playButton.getSprite().getX(), (int) playButton.getSprite().getX(), PlayButton.BUTTON_WIDTH, PlayButton.BUTTON_HEIGHT);
+        playButton.getSprite().draw(batch);
     }
 
     @Override

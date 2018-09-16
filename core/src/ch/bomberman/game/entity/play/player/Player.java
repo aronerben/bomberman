@@ -27,8 +27,8 @@ public class Player extends MapDrawable {
     private final static List<Integer> MOVEMENT_KEYS = Arrays.asList(UP, LEFT, DOWN, RIGHT);
 
     //TODO make these fields?
-    public final static float PLAYER_WIDTH = 5;
-    public final static float PLAYER_HEIGHT = 5;
+    public final static int PLAYER_WIDTH = 5;
+    public final static int PLAYER_HEIGHT = 5;
 
     private final Map map;
     private final int playerNumber;
@@ -53,7 +53,7 @@ public class Player extends MapDrawable {
         this.playerNumber = playerNumber;
         pressedMovementKeys = new IntArray(MOVEMENT_KEYS.size());
         //initially center player nicely on tile
-        MapTileHelper.centerObjectOnTile(getBox(), PLAYER_WIDTH, PLAYER_HEIGHT);
+        MapTileHelper.centerObjectOnTile(getObject(), PLAYER_WIDTH, PLAYER_HEIGHT);
         collisionResolver = new PlayerCollisionResolver(this.map, this);
     }
 
@@ -98,6 +98,7 @@ public class Player extends MapDrawable {
         placeBomb(dt);
     }
 
+    //TODO CREATE ANIMATIONS FIRST FOR PLAYER, PACKED CREATED, USE ATLAS
     //TODO CONTINUE WITH BOMB COLLISION HANDLING AND EXPLOSIONS
     //TODO THEN DO PLAYER AND BOMB ANIMATIONS WITH SPRITESHEET, SEE WIKI FOR ANIMATION
     //TODO make animation fps dependent on speed powerups
@@ -116,7 +117,8 @@ public class Player extends MapDrawable {
     }
 
     private Tile getCurrentPlayerCenterTile() {
-        return map.getTiles()[(int) getPlayerCenterTileIndex().x][(int) getPlayerCenterTileIndex().y];
+        Vector2 centerTileIndex = getPlayerCenterTileIndex();
+        return map.getTiles()[(int) centerTileIndex.x][(int) centerTileIndex.y];
     }
 
     private boolean allowBombOnCurrentTile() {
@@ -163,7 +165,7 @@ public class Player extends MapDrawable {
         }
 
         //update tile index position
-        MapTileHelper.virtualUnitsToTileIndex(getBox(), getTileIndex());
+        MapTileHelper.virtualUnitsToTileIndex(getObject(), getTileIndex());
     }
 
     private void moveDirection(int curMovementKey, float deltaDistance) {
@@ -187,33 +189,33 @@ public class Player extends MapDrawable {
 
     private void mapDirectionToMovement(int directionKey, float deltaDistance) {
         if(directionKey == LEFT) {
-            getBox().x -= deltaDistance;
+            getObject().translateX(-deltaDistance);
         } else if(directionKey == RIGHT) {
-            getBox().x += deltaDistance;
+            getObject().translateX(deltaDistance);
         } else if(directionKey == UP) {
-            getBox().y += deltaDistance;
+            getObject().translateY(deltaDistance);
         } else if(directionKey == DOWN) {
-            getBox().y -= deltaDistance;
+            getObject().translateY(-deltaDistance);
         }
     }
 
     private Vector2 getPlayerCenterTileIndex() {
-        Vector2 tileIndex = new Vector2(getBox().x + PLAYER_WIDTH / 2, getBox().y + PLAYER_HEIGHT / 2);
+        Vector2 tileIndex = new Vector2(getObject().getX() + PLAYER_WIDTH / 2f, getObject().getY() + PLAYER_HEIGHT / 2f);
         MapTileHelper.virtualUnitsToTileIndex(tileIndex, tileIndex);
         return tileIndex;
     }
 
-    public void movePlayerToTile(Vector2 tileIndex) {
+    public void moveToTile(Vector2 tileIndex) {
         setTileIndex(tileIndex);
         Vector2 position = new Vector2();
         MapTileHelper.tileIndexToVirtualUnits(tileIndex, position);
-        getBox().setPosition(position);
-        MapTileHelper.centerObjectOnTile(getBox(), PLAYER_WIDTH, PLAYER_HEIGHT);
+        getObject().setPosition(position.x, position.y);
+        MapTileHelper.centerObjectOnTile(getObject(), PLAYER_WIDTH, PLAYER_HEIGHT);
     }
 
     public void dispose() {
-        bombs.forEach(bomb -> bomb.getTexture().dispose());
-        getTexture().dispose();
+        bombs.forEach(bomb -> bomb.getObject().getTexture().dispose());
+        getObject().getTexture().dispose();
     }
 
     public void collisionAnimate(int curMovementKey, int direction, float distance) {

@@ -15,11 +15,11 @@ import static ch.bomberman.game.entity.play.map.Map.MAP_TILES;
 
 public class Bomb extends MapDrawable {
     //TODO width and height separate?
-    public static final float BOMB_SIZE = 3;
+    public static final int BOMB_SIZE = 3;
     public static final int BOMB_LIMIT_ON_MAP = MAP_TILES * MAP_TILES;
 
     public Bomb(Vector2 tileIndex) {
         super(tileIndex, new Texture(AssetCollection.BOMB), BOMB_SIZE, BOMB_SIZE);
-        MapTileHelper.centerObjectOnTile(getBox(), BOMB_SIZE, BOMB_SIZE);
+        MapTileHelper.centerObjectOnTile(getObject(), BOMB_SIZE, BOMB_SIZE);
     }
 }

@@ -3,6 +3,7 @@ package ch.bomberman.game.entity.play.misc;
 import ch.bomberman.game.entity.play.map.Map;
 import ch.bomberman.game.entity.play.map.Tile;
 import ch.bomberman.game.entity.play.player.Player;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -19,7 +20,7 @@ public class PlayerCollisionResolver {
      * Handles how much of the player can collide with a wall and still go around it to a space tile.
      * (Provided there is a space tile around the wall tile)
      */
-    private static final int OBSTACLE_LENIENCY_MULTIPLIER = 2;
+    private static final double OBSTACLE_LENIENCY_MULTIPLIER = 1;
 
     private final Player player;
     private final Map map;
@@ -32,11 +33,12 @@ public class PlayerCollisionResolver {
         this.player = player;
     }
 
+    //TODO check if all these getBoundingRect() calls are performance hits
     public void resolveCollision(int curMovementKey) {
         //check player somehow managed to get outside borders
-        if(!map.getAllowedZone().contains(player.getBox())) {
+        if(!map.getAllowedZone().contains(player.getObject().getBoundingRectangle())) {
             //move him to starting position
-            player.movePlayerToTile(Map.STARTING_POSITIONS[player.getPlayerNumber()]);
+            player.moveToTile(Map.STARTING_POSITIONS[player.getPlayerNumber()]);
         }
         resolveTileCollision(curMovementKey);
     }
@@ -65,20 +67,20 @@ public class PlayerCollisionResolver {
         Tile tilePlayerOffset = map.getTiles()[(int) playerTileIndex.x + columnAdd][(int) playerTileIndex.y + rowAdd];
         Tile tileNext = map.getTiles()[(int) playerTileIndex.x + (columnAdd != 0 ? columnAdd : 1)][(int) playerTileIndex.y + (rowAdd != 0 ? rowAdd : 1)];
 
-        intersectTilesWithPlayer(curMovementKey, playerTileIndex, tilePlayerOffset, tileNext, player.getBox());
+        intersectTilesWithPlayer(curMovementKey, playerTileIndex, tilePlayerOffset, tileNext, player.getObject());
     }
 
-    private void intersectTilesWithPlayer(int curMovementKey, Vector2 playerTileIndex, Tile tilePlayerOffset, Tile tileNext, Rectangle playerBox) {
-        Rectangle tilePlayerOffsetBox = tilePlayerOffset.getBox();
-        Rectangle tileNextBox = tileNext.getBox();
+    private void intersectTilesWithPlayer(int curMovementKey, Vector2 playerTileIndex, Tile tilePlayerOffset, Tile tileNext, Sprite playerObject) {
         //use vars to ensure evaluation of both
-        boolean playerIntersectsOffsetTile = Intersector.intersectRectangles(playerBox, tilePlayerOffsetBox, intersectionPlayerOffset);
-        boolean playerIntersectsNextTile = Intersector.intersectRectangles(playerBox, tileNextBox, intersectionNext);
+        boolean playerIntersectsOffsetTile = Intersector.intersectRectangles(playerObject.getBoundingRectangle(),
+                tilePlayerOffset.getObject().getBoundingRectangle(), intersectionPlayerOffset);
+        boolean playerIntersectsNextTile = Intersector.intersectRectangles(playerObject.getBoundingRectangle(),
+                tileNext.getObject().getBoundingRectangle(), intersectionNext);
 
         if(!tilePlayerOffset.isTraversable() && playerIntersectsOffsetTile
                 || !tileNext.isTraversable() && playerIntersectsNextTile) {
 
-            stickPlayerToBox(curMovementKey, playerBox, tilePlayerOffsetBox);
+            stickPlayerToBox(curMovementKey, playerObject, tilePlayerOffset.getObject());
 
             if(tilePlayerOffset.isTraversable() || tileNext.isTraversable()) {
                 Tile spaceTile = tileNext.isTraversable() ? tileNext : tilePlayerOffset;
@@ -109,16 +111,16 @@ public class PlayerCollisionResolver {
         player.collisionAnimate(curMovementKey, direction, distance);
     }
 
-    private void stickPlayerToBox(int curMovementKey, Rectangle playerBox, Rectangle tilePlayerOffsetBox) {
+    private void stickPlayerToBox(int curMovementKey, Sprite playerObject, Sprite tilePlayerOffset) {
         //stick player to the colliding wall
         if(curMovementKey == LEFT) {
-            playerBox.x = tilePlayerOffsetBox.x + TILE_SIZE;
+            playerObject.setX(tilePlayerOffset.getX() + TILE_SIZE);
         } else if(curMovementKey == RIGHT) {
-            playerBox.x = tilePlayerOffsetBox.x - PLAYER_WIDTH;
+            playerObject.setX(tilePlayerOffset.getX() - PLAYER_WIDTH);
         } else if(curMovementKey == UP) {
-            playerBox.y = tilePlayerOffsetBox.y - PLAYER_HEIGHT;
+            playerObject.setY(tilePlayerOffset.getY() - PLAYER_HEIGHT);
         } else if(curMovementKey == DOWN) {
-            playerBox.y = tilePlayerOffsetBox.y + TILE_SIZE;
+            playerObject.setY(tilePlayerOffset.getY() + TILE_SIZE);
         }
     }
 }

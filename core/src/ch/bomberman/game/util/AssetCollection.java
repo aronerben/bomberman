@@ -6,7 +6,7 @@ public class AssetCollection {
     }
 
     //TODO use textureatlas for textures
-    public static final String PLAYER = "badlogic.jpg";
+    public static final String PLAYER = "player_frontal_standing.png";
     public static final String PLAY_BUTTON = "play_button.png";
     public static final String BREAKABLE_BLOCK_TILE = "breakable_block_tile.png";
     public static final String UNBREAKABLE_BLOCK_TILE = "unbreakable_block_tile.png";
