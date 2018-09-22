@@ -9,6 +9,7 @@ import ch.bomberman.game.util.AssetCollection;
 import ch.bomberman.game.util.MapTileHelper;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.IntArray;
 
@@ -22,7 +23,7 @@ import static ch.bomberman.game.util.KeyBindings.*;
 
 public class Player extends MapDrawable {
 
-    private float SPEED = 20;
+    private static final int SPEED = 20;
 
     private final static List<Integer> MOVEMENT_KEYS = Arrays.asList(UP, LEFT, DOWN, RIGHT);
 
@@ -156,6 +157,8 @@ public class Player extends MapDrawable {
 
         //select direction
         moveDirection(curMovementKey, deltaDistance);
+        //match collision box to sprite
+        matchCollisionBox();
 
         //only resolve collision if there was movement
         if(curMovementKey != MISC) {
@@ -166,6 +169,11 @@ public class Player extends MapDrawable {
 
         //update tile index position
         MapTileHelper.virtualUnitsToTileIndex(getObject(), getTileIndex());
+    }
+
+    private void matchCollisionBox() {
+        Sprite player = getObject();
+        getBox().set(player.getX(), player.getY(), player.getWidth(), player.getHeight());
     }
 
     private void moveDirection(int curMovementKey, float deltaDistance) {
@@ -188,6 +196,7 @@ public class Player extends MapDrawable {
     }
 
     private void mapDirectionToMovement(int directionKey, float deltaDistance) {
+        //move sprite AND collision box
         if(directionKey == LEFT) {
             getObject().translateX(-deltaDistance);
         } else if(directionKey == RIGHT) {

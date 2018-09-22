@@ -31,7 +31,6 @@ public class Main extends ApplicationAdapter {
     private SpriteBatch batch;
     private float waitTime;
 
-    //TODO refactor these?
     private OrthographicCamera cam;
     private Viewport viewport;
 

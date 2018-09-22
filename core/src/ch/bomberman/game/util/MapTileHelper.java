@@ -3,6 +3,7 @@ package ch.bomberman.game.util;
 import ch.bomberman.game.Main;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
 import static ch.bomberman.game.entity.play.map.Map.MAP_TILES;
@@ -40,5 +41,11 @@ public class MapTileHelper {
                 object.getX() + TILE_SIZE / 2f - width / 2f,
                 object.getY() + TILE_SIZE / 2f - height / 2f
         );
+    }
+
+    public static Rectangle createNormalizedBox(Vector2 tileIndex, float width, float height) {
+        Vector2 normalizedPos = new Vector2();
+        MapTileHelper.tileIndexToVirtualUnits(tileIndex, normalizedPos);
+        return new Rectangle(normalizedPos.x, normalizedPos.y, width, height);
     }
 }
